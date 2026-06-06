@@ -5,7 +5,14 @@ struct ShelfContentView: View {
     @ObservedObject var store: ItemStore
 
     var body: some View {
-        // TODO(T4): render the ordered list of `store.items` as `ItemRowView`s.
-        EmptyView()
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(store.items) { item in
+                    ItemRowView(item: item)
+                }
+            }
+            .padding(.vertical, 8)
+        }
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
