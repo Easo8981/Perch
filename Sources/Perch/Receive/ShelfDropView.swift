@@ -12,13 +12,34 @@ final class ShelfDropView: NSView {
 
     /// Dragged types the shelf accepts (file URL, file promise, string, RTF, TIFF,
     /// URL, HTML, …). Populated in T3.
-    static let acceptedTypes: [NSPasteboard.PasteboardType] = []
+    static let acceptedTypes: [NSPasteboard.PasteboardType] = [
+        .fileURL,
+        .string,
+        .rtf,
+        .tiff,
+        .URL,
+        .html
+    ]
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        registerForDraggedTypes(Self.acceptedTypes)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        registerForDraggedTypes(Self.acceptedTypes)
+    }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        fatalError("unimplemented")
+        guard sender.draggingPasteboard.availableType(from: Self.acceptedTypes) != nil else {
+            return []
+        }
+
+        return .copy
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        fatalError("unimplemented")
+        dropHandler?.handleDrop(sender.draggingPasteboard) ?? false
     }
 }
