@@ -4,15 +4,28 @@ import AppKit
 /// on every Space, never takes key focus, and stays *below* the menu bar.
 final class ShelfPanel: NSPanel {
     init(contentRect: NSRect) {
-        // T0.1: configure as `.nonactivatingPanel`, window `level = .floating`
-        // (NOT `.statusBar`/`.mainMenu+`, which sit above the menu bar; Decision L2),
-        // collectionBehavior `[.canJoinAllSpaces, .fullScreenAuxiliary]`.
-        fatalError("unimplemented")
+        super.init(
+            contentRect: contentRect,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        configurePanel()
     }
 
     required init?(coder: NSCoder) {
-        fatalError("unimplemented")
+        return nil
     }
 
     override var canBecomeKey: Bool { false }
+
+    private func configurePanel() {
+        level = .floating
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        isReleasedWhenClosed = false
+        hidesOnDeactivate = false
+        hasShadow = true
+        isOpaque = true
+        backgroundColor = .windowBackgroundColor
+    }
 }

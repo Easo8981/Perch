@@ -4,6 +4,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var controller: ShelfController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // TODO(T0.1): create the ShelfController and call start().
+        do {
+            let controller = try ShelfController()
+            self.controller = controller
+            controller.start()
+        } catch {
+            NSLog("Perch failed to start: \(error)")
+            NSApp.terminate(nil)
+        }
     }
 }
