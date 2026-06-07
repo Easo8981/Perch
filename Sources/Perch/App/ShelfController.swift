@@ -18,6 +18,7 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
     private var retractTask: Task<Void, Never>?
     private var pointerInRegion = false
     private var preferredScreen: NSScreen?
+    private var preferredEdge: ShelfEdge = .right
 
     init() throws {
         holding = try HoldingDirectory.standard()
@@ -105,8 +106,9 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
     // MARK: EdgeStripDelegate
 
     func edgeStrip(_ strip: EdgeStripWindow, pointerDidEnterViaDrag viaDrag: Bool) {
-        // Open the shelf on whichever screen's tab was used.
+        // Open the shelf on whichever screen + edge's tab was used.
         preferredScreen = strip.pinnedScreen
+        preferredEdge = strip.edge
         // Drags open immediately; a plain hover waits briefly so brushing past the
         // edge does not pop the shelf open.
         enterRegion(immediate: viaDrag)
@@ -120,25 +122,21 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
         guard let screen = NSScreen.main ?? NSScreen.screens.first else {
             return NSRect(x: 0, y: 0, width: 300, height: 640)
         }
-        return panelFrame(for: screen)
+        return panelFrame(for: screen, edge: .right)
     }
 
-    /// The floating-card frame on a given screen: inset from the right edge so the
-    /// always-visible edge tab peeks out beside the open panel. The tab's catch zone
-    /// is wider than this margin, so it still overlaps the panel (no dead zone).
-    private static func panelFrame(for screen: NSScreen) -> NSRect {
+    /// The floating-card frame on a given screen + edge: inset from that edge so the
+    /// edge tab's catch zone (wider than the margin) still overlaps the panel — no
+    /// dead zone on the hand-off.
+    private static func panelFrame(for screen: NSScreen, edge: ShelfEdge) -> NSRect {
         let visibleFrame = screen.visibleFrame
-        let rightMargin: CGFloat = 12
-        let width = min(CGFloat(300), visibleFrame.width - rightMargin)
+        let margin: CGFloat = 12
+        let width = min(CGFloat(300), visibleFrame.width - margin)
         let height = min(CGFloat(460), visibleFrame.height - 80)
         let y = visibleFrame.minY + (visibleFrame.height - height) / 2
+        let x = edge == .left ? visibleFrame.minX + margin : visibleFrame.maxX - width - margin
 
-        return NSRect(
-            x: visibleFrame.maxX - width - rightMargin,
-            y: y,
-            width: width,
-            height: height
-        )
+        return NSRect(x: x, y: y, width: width, height: height)
     }
 
     private func installEdgeStripIfNeeded() {
@@ -151,12 +149,43 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
             return
         }
 
-        edgeStrips = NSScreen.screens.map { screen in
-            let strip = EdgeStripWindow(screen: screen)
-            strip.stripDelegate = self
-            strip.orderFrontRegardless()
-            NSLog("Perch edge tab installed at frame \(NSStringFromRect(strip.frame))")
-            return strip
+        var strips: [EdgeStripWindow] = []
+        for screen in Self.screensWithOuterEdge(.right) {
+            strips.append(makeStrip(on: screen, edge: .right))
+        }
+        for screen in Self.screensWithOuterEdge(.left) {
+            strips.append(makeStrip(on: screen, edge: .left))
+        }
+        edgeStrips = strips
+        NSLog("Perch installed \(strips.count) edge tab(s) across \(NSScreen.screens.count) screen(s)")
+    }
+
+    private func makeStrip(on screen: NSScreen, edge: ShelfEdge) -> EdgeStripWindow {
+        let strip = EdgeStripWindow(screen: screen, edge: edge)
+        strip.stripDelegate = self
+        strip.orderFrontRegardless()
+        NSLog("Perch edge tab (\(edge)) installed at frame \(NSStringFromRect(strip.frame))")
+        return strip
+    }
+
+    /// Screens whose given edge is a true outer edge of the desktop — i.e. no other
+    /// screen sits immediately beyond it (which would make the edge an internal seam
+    /// and put a useless tab in the middle of the desktop).
+    private static func screensWithOuterEdge(_ edge: ShelfEdge) -> [NSScreen] {
+        let screens = NSScreen.screens
+        return screens.filter { screen in
+            let edgeX = edge == .left ? screen.frame.minX : screen.frame.maxX
+            let hasNeighborBeyond = screens.contains { other in
+                guard other != screen,
+                      other.frame.minY < screen.frame.maxY,
+                      other.frame.maxY > screen.frame.minY else {
+                    return false
+                }
+                return edge == .left
+                    ? abs(other.frame.maxX - edgeX) < 1
+                    : abs(other.frame.minX - edgeX) < 1
+            }
+            return !hasNeighborBeyond
         }
     }
 
@@ -194,7 +223,7 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
         guard !panel.isVisible else { return }
 
         let screen = preferredScreen ?? NSScreen.main ?? NSScreen.screens.first
-        let frame = screen.map(Self.panelFrame(for:)) ?? Self.initialPanelFrame()
+        let frame = screen.map { Self.panelFrame(for: $0, edge: preferredEdge) } ?? Self.initialPanelFrame()
         windowController.reveal(animated: true, targetFrame: frame)
     }
 

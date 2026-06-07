@@ -83,8 +83,11 @@ final class ShelfWindowController {
             return frame.offsetBy(dx: frame.width, dy: 0)
         }
 
+        // Slide off whichever edge the panel is closer to.
+        let isLeftEdge = frame.midX < screenFrame.midX
+        let x = isLeftEdge ? screenFrame.minX - frame.width : screenFrame.maxX
         return NSRect(
-            x: screenFrame.maxX,
+            x: x,
             y: frame.minY,
             width: frame.width,
             height: frame.height

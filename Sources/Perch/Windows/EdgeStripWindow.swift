@@ -1,5 +1,11 @@
 import AppKit
 
+/// Which screen edge a shelf tab / panel is attached to.
+enum ShelfEdge {
+    case left
+    case right
+}
+
 /// Notified when a drag enters the edge tab (the trigger to reveal the shelf).
 @MainActor
 protocol EdgeStripDelegate: AnyObject {
@@ -25,6 +31,9 @@ final class EdgeStripWindow: NSPanel {
     /// The screen this tab is pinned to (used to reveal the shelf on the right one).
     let pinnedScreen: NSScreen
 
+    /// Which edge of the screen this tab hugs.
+    let edge: ShelfEdge
+
     /// Whether the visible tab is drawn. The window itself is always present (so it
     /// can catch hover + drag), but the accent handle only shows while dragging.
     var showsTab = false {
@@ -34,11 +43,13 @@ final class EdgeStripWindow: NSPanel {
         }
     }
 
-    init(screen: NSScreen) {
+    init(screen: NSScreen, edge: ShelfEdge) {
         self.pinnedScreen = screen
+        self.edge = edge
         let screenFrame = screen.frame
+        let x = edge == .left ? screenFrame.minX : screenFrame.maxX - Self.stripWidth
         let contentRect = NSRect(
-            x: screenFrame.maxX - Self.stripWidth,
+            x: x,
             y: screenFrame.midY - Self.tabHeight / 2,
             width: Self.stripWidth,
             height: Self.tabHeight
@@ -108,11 +119,12 @@ private final class EdgeStripTriggerView: NSView {
         // Only draw the handle while a drag is in progress.
         guard strip?.showsTab == true else { return }
 
-        // A visible accent handle hugging the right edge: rounded on the left, run
-        // flush off the screen edge on the right.
+        // A visible accent handle hugging the edge: rounded on the inner side, run
+        // flush off the screen edge on the outer side.
         let visibleWidth: CGFloat = 8
+        let originX = strip?.edge == .left ? bounds.minX - visibleWidth : bounds.maxX - visibleWidth
         let barRect = NSRect(
-            x: bounds.maxX - visibleWidth,
+            x: originX,
             y: 0,
             width: visibleWidth * 2,
             height: bounds.height
