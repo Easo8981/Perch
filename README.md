@@ -1,51 +1,66 @@
-# Perch
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="Perch icon">
+</p>
 
-A personal, unsandboxed, self-signed Yoink-style drag-and-drop **shelf** for macOS.
+<h1 align="center">Perch</h1>
+
+<p align="center">
+  A free, open-source drag-and-drop <b>shelf</b> for macOS —<br>
+  a Yoink / Dropover-style staging area that lives on your screen edges.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-black?logo=apple&logoColor=white" alt="macOS 14+">
+  <a href="https://github.com/maxthegray/Perch/releases"><img src="https://img.shields.io/github/v/release/maxthegray/Perch" alt="Latest release"></a>
+</p>
 
 Drag anything onto a screen-edge tab, Perch holds it, and you drag it back out later —
-into any destination app. File promises work in both directions, so sources and
-destinations that only speak promises (Photos, Mail, Messages) keep working, and the
-source app doesn't have to still be running when you drop.
+into any app. File promises work in **both** directions, so sources and destinations that
+only speak promises (Photos, Mail, Messages) keep working, and the source app doesn't have
+to still be running when you drop.
 
-## Run
+<!-- TODO: add a demo GIF here — e.g. ![Perch demo](assets/demo.gif) -->
 
-For quick iteration:
+## Install
+
+### Homebrew (recommended)
 
 ```sh
-swift build
-swift run
+brew tap maxthegray/tap
+brew install --cask perch --no-quarantine
 ```
 
-Perch runs as an **accessory** app — no Dock icon, no menu bar item
-(`NSApp.setActivationPolicy(.accessory)`). Requires macOS 14+.
+> Perch is ad-hoc signed, not notarized — hence `--no-quarantine`. Without it, macOS
+> Gatekeeper blocks the first launch; you can instead right-click `Perch.app` in
+> `/Applications` and choose **Open** once.
 
-## Install as an app (always-on)
+### Manual download
 
-To use Perch day-to-day, build a real `.app` bundle and have it launch at login:
+Grab `Perch.zip` from the [latest release](https://github.com/maxthegray/Perch/releases),
+unzip it, move `Perch.app` to `/Applications`, then right-click it and choose **Open**.
+
+### Build from source
 
 ```sh
-swift Scripts/make-icon.swift   # one-time: generates Resources/AppIcon.icns
+swift Scripts/make-icon.swift   # one-time: generates the app icon
 ./Scripts/build-app.sh          # builds + ad-hoc-signs Perch.app
-mv Perch.app /Applications      # a stable location keeps the login item valid
-open /Applications/Perch.app
+mv Perch.app /Applications && open /Applications/Perch.app
 ```
 
-Then right-click the shelf and turn on **Launch at Login** (it appears only when running
-as a bundled app, and uses `SMAppService`). Since the shelf has no Dock or menu-bar
-presence, **Quit Perch** also lives in that right-click menu.
+Perch runs as an **accessory** app — no Dock icon, no menu-bar item. Requires macOS 14+.
 
-### Updating after a code change
+## Features
 
-The installed app does **not** auto-update — it's a snapshot. After editing the source,
-rebuild and reinstall in one step:
-
-```sh
-./Scripts/install.sh   # rebuilds Perch.app, quits the running copy, reinstalls, relaunches
-```
-
-It replaces `/Applications/Perch.app` in place, so the Dock launcher keeps working. (If
-Launch at Login ever stops firing after an update, toggle it off then on once — the
-ad-hoc signature changes each build.)
+- **Stash anything** — files, text, images, URLs, even file promises from Photos/Mail/Messages.
+- **Time-shifted drag & drop** — pick things up now, drop them somewhere else later; the source app can quit in between.
+- **Quick Look thumbnails** — real previews of images, PDFs, and documents.
+- **Two looks, toggled live** — refined **Glass** or ultra-minimal **Minimal**.
+- **Grows to fit** — the card hugs its contents and expands as you add items.
+- **Reorder & delete** — drag rows to rearrange; hover to delete.
+- **Edge docks** — left, right, and the notch, each individually toggleable.
+- **Stays out of the way** — no Dock/menu-bar clutter; optional launch-at-login; multi-monitor aware.
+- **Local & private** — everything is plain files on disk. No network, no accounts, no tracking.
 
 ## Use it
 
@@ -54,11 +69,17 @@ ad-hoc signature changes each build.)
 - **Retrieve:** hover the edge to reveal the shelf, then drag an item out into any app.
   Items move out by default (the shelf hands off its copy).
 - **Reorder:** drag a row up/down *within* the shelf to rearrange; drag it *out* to vend.
-- **Right-click** an item or the shelf for: **Quick Look**, **Delete**, **Clear All**, and
-  **Appearance ▸ Glass / Minimal** (toggles the look live; the choice persists).
+- **Right-click** an item or the shelf for **Quick Look**, **Delete**, **Clear All**,
+  **Appearance ▸ Glass / Minimal**, **Edges ▸ Left / Right / Top**, **Launch at Login**,
+  and **Quit**.
 - **Hover** a row (Glass) to reveal a **✕** delete button.
 
-The card sizes itself to its contents — small with one item, growing as you add more.
+## Updating
+
+```sh
+brew upgrade --cask perch          # if installed via Homebrew
+./Scripts/install.sh               # if built from source — rebuilds + reinstalls in place
+```
 
 ## Data
 
@@ -72,7 +93,7 @@ items/<uuid>/
   files/            # copied real files + materialized promises
 ```
 
-It's plain JSON + files on disk — inspectable and easy to delete.
+Plain JSON + files on disk — inspectable, and easy to delete.
 
 ## License
 
