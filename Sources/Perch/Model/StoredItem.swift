@@ -16,6 +16,10 @@ struct ItemMetadata: Codable, Equatable {
     var representations: [RepRecord]
     var backingFileNames: [String]
     var primaryFileType: String?
+    /// Where each backing file was moved from (backing file name → original source
+    /// path), so the shelf can put it back. Only set for file drops Perch took
+    /// ownership of by moving; absent for clippings, promises, and copy fallbacks.
+    var originPaths: [String: String]?
 }
 
 /// A single item held by the shelf. Backed by `items/<uuid>/` on disk; reads

@@ -28,6 +28,10 @@ final class EdgeStripWindow: NSPanel {
     /// be an easy drag target along the right edge.
     static let tabHeight: CGFloat = 360
 
+    /// Height of the *visible* handle pill, centered in the (taller) catch zone — a
+    /// short grip that reads closer to the shelf card's size than a full-edge bar.
+    static let tabVisibleHeight: CGFloat = 96
+
     /// Horizontal pad on each side of the notch for the traced outline.
     static let notchTracePad: CGFloat = 10
 
@@ -91,11 +95,14 @@ final class EdgeStripWindow: NSPanel {
     /// The catch-zone frame for a tab on the given edge.
     static func triggerFrame(for screen: NSScreen, edge: ShelfEdge) -> NSRect {
         let screenFrame = screen.frame
+        // Center on the *visible* frame (minus menu bar / Dock) so the tab lines up
+        // vertically with the shelf card, which is itself centered on the visible frame.
+        let centerY = screen.visibleFrame.midY
         switch edge {
         case .left:
-            return NSRect(x: screenFrame.minX, y: screenFrame.midY - tabHeight / 2, width: stripWidth, height: tabHeight)
+            return NSRect(x: screenFrame.minX, y: centerY - tabHeight / 2, width: stripWidth, height: tabHeight)
         case .right:
-            return NSRect(x: screenFrame.maxX - stripWidth, y: screenFrame.midY - tabHeight / 2, width: stripWidth, height: tabHeight)
+            return NSRect(x: screenFrame.maxX - stripWidth, y: centerY - tabHeight / 2, width: stripWidth, height: tabHeight)
         case .notch:
             let interval = notchXInterval(for: screen)
             // Cover the notch itself (up to the screen top) plus a little catch zone
@@ -207,7 +214,9 @@ private final class EdgeStripTriggerView: NSView {
         // the screen edge on the outer side.
         let visibleWidth = theme.tabVisibleWidth
         let originX = strip?.edge == .left ? bounds.minX - visibleWidth : bounds.maxX - visibleWidth
-        let barRect = NSRect(x: originX, y: 0, width: visibleWidth * 2, height: bounds.height)
+        let handleHeight = min(bounds.height, EdgeStripWindow.tabVisibleHeight)
+        let originY = bounds.midY - handleHeight / 2
+        let barRect = NSRect(x: originX, y: originY, width: visibleWidth * 2, height: handleHeight)
         let path = NSBezierPath(
             roundedRect: barRect,
             xRadius: theme.tabCornerRadius,

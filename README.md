@@ -57,7 +57,7 @@ Perch runs as an **accessory** app — no Dock icon, no menu-bar item. Requires 
 - **Quick Look thumbnails** — real previews of images, PDFs, and documents.
 - **Two looks, toggled live** — refined **Glass** or ultra-minimal **Minimal**.
 - **Grows to fit** — the card hugs its contents and expands as you add items.
-- **Reorder & delete** — drag rows to rearrange; hover to delete.
+- **Reorder & put back** — drag rows to rearrange; hover a row's **✕** to return the file to where it came from (right-click ▸ Delete to remove it for good).
 - **Edge docks** — left, right, and the notch, each individually toggleable.
 - **Stays out of the way** — no Dock/menu-bar clutter; optional launch-at-login; multi-monitor aware.
 - **Local & private** — everything is plain files on disk. No network, no accounts, no tracking.
@@ -72,7 +72,7 @@ Perch runs as an **accessory** app — no Dock icon, no menu-bar item. Requires 
 - **Right-click** an item or the shelf for **Quick Look**, **Delete**, **Clear All**,
   **Appearance ▸ Glass / Minimal**, **Edges ▸ Left / Right / Top**, **Launch at Login**,
   and **Quit**.
-- **Hover** a row (Glass) to reveal a **✕** delete button.
+- **Hover** a row (Glass) to reveal a **✕** that moves the file back to its original location.
 
 ## Updating
 

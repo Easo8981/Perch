@@ -108,7 +108,7 @@ struct ItemRowView: View {
 
     @ViewBuilder
     private var deleteButton: some View {
-        if theme.showsDeleteButton && isHovered {
+        if theme.showsDeleteButton && showsLabels && isHovered {
             ZStack {
                 Circle().fill(.thinMaterial)
                 Circle().stroke(.white.opacity(0.18), lineWidth: 0.5)

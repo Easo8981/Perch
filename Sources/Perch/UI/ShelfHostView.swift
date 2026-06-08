@@ -36,6 +36,14 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
     /// URLs currently fed to `QLPreviewPanel`.
     private var quickLookURLs: [URL] = []
 
+    /// When true, dragging an item out leaves the original on the shelf (copy);
+    /// otherwise it's removed once it lands somewhere (move — the default).
+    private static let vendCopiesKey = "Perch.VendCopies"
+    private var vendCopies: Bool {
+        get { UserDefaults.standard.bool(forKey: Self.vendCopiesKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.vendCopiesKey) }
+    }
+
     /// Called with the SwiftUI content's measured natural height so the controller can
     /// size the window to fit.
     var onContentHeight: ((CGFloat) -> Void)?
@@ -113,7 +121,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
         let point = convert(event.locationInWindow, from: nil)
         resetDragState()
 
-        if themeStore.theme.showsDeleteButton,
+        if themeStore.theme.showsDeleteButton, themeStore.showsLabels,
            let index = rowIndex(at: point),
            deleteHitRect(forRow: index).contains(point) {
             pendingDeleteItem = store.items[index]
@@ -157,7 +165,9 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
                index < store.items.count,
                store.items[index].id == item.id,
                deleteHitRect(forRow: index).contains(point) {
-                store.remove(item)
+                // The ✕ puts the file back where it came from (right-click ▸ Delete
+                // removes it for good).
+                store.returnToOrigin(item)
             }
         } else if reorderActive {
             commitReorder()
@@ -211,7 +221,8 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
             // Move semantics: once the item has landed somewhere, remove it from the
             // shelf. Deferred briefly so any in-flight file-promise write (which
             // copies from the holding dir) can finish before the dir is deleted.
-            guard !operation.isEmpty else { return }
+            // In copy mode the original stays put.
+            guard !operation.isEmpty, !self.vendCopies else { return }
             Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .milliseconds(600))
                 self?.store.remove(item)
@@ -327,6 +338,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
         menu.addItem(.separator())
         menu.addItem(appearanceMenuItem())
         menu.addItem(edgesMenuItem())
+        menu.addItem(dragOutMenuItem())
 
         let showNames = NSMenuItem(
             title: "Show Names",
@@ -419,6 +431,31 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
 
     @objc private func toggleShowLabelsAction(_ sender: NSMenuItem) {
         themeStore.showsLabels.toggle()
+    }
+
+    /// "Drag Out ▸ Move / Copy" — whether vending an item removes it or leaves a copy.
+    private func dragOutMenuItem() -> NSMenuItem {
+        let dragOut = NSMenuItem(title: "Drag Out", action: nil, keyEquivalent: "")
+        let submenu = NSMenu()
+        let entries: [(String, Bool)] = [("Move", false), ("Copy", true)]
+        for (title, copies) in entries {
+            let item = NSMenuItem(
+                title: title,
+                action: #selector(selectDragOutModeAction(_:)),
+                keyEquivalent: ""
+            )
+            item.target = self
+            item.representedObject = copies
+            item.state = (copies == vendCopies) ? .on : .off
+            submenu.addItem(item)
+        }
+        dragOut.submenu = submenu
+        return dragOut
+    }
+
+    @objc private func selectDragOutModeAction(_ sender: NSMenuItem) {
+        guard let copies = sender.representedObject as? Bool else { return }
+        vendCopies = copies
     }
 
     @objc private func deleteMenuAction(_ sender: NSMenuItem) {

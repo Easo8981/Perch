@@ -54,6 +54,7 @@ struct PasteboardSnapshotter {
 
         var representations: [RepRecord] = []
         var backingFileNames: [String] = []
+        var originPaths: [String: String] = [:]
         var stringTitle: String?
         var repIndex = 0
 
@@ -103,8 +104,12 @@ struct PasteboardSnapshotter {
                     // still succeeds rather than failing.
                     do {
                         try fileManager.moveItem(at: sourceURL, to: destinationURL)
+                        // Remember where it came from so the shelf can put it back.
+                        originPaths[destinationURL.lastPathComponent] = sourceURL.path
                     } catch {
                         NSLog("Perch could not move \(sourceURL.path) into shelf (\(error)); copying instead")
+                        // Copy fallback: the original is still in place, so no origin
+                        // to restore — removing the shelf copy already "puts it back".
                         try fileManager.copyItem(at: sourceURL, to: destinationURL)
                     }
                     backingFileNames.append(destinationURL.lastPathComponent)
@@ -118,7 +123,8 @@ struct PasteboardSnapshotter {
             title: title(backingFileNames: backingFileNames, stringTitle: stringTitle, id: id),
             representations: representations,
             backingFileNames: backingFileNames,
-            primaryFileType: representations.first?.typeIdentifier
+            primaryFileType: representations.first?.typeIdentifier,
+            originPaths: originPaths.isEmpty ? nil : originPaths
         )
         let metaURL = directoryURL.appendingPathComponent("meta.json", isDirectory: false)
         try JSONEncoder().encode(metadata).write(to: metaURL, options: .atomic)
