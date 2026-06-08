@@ -183,29 +183,17 @@ private final class EdgeStripTriggerView: NSView {
         let theme = strip?.themeStore.theme ?? ShelfTheme.resolve(.glass)
         let accent = theme.tabAccent
 
-        // Notch: trace the real notch contour — up both vertical sides to the screen
-        // top, around the two rounded bottom corners.
+        // Notch: a single flat horizontal line along the bottom edge of the notch,
+        // pulled in slightly on each side so it matches the notch's visible width.
         if strip?.edge == .notch {
-            let pad = EdgeStripWindow.notchTracePad
-            let cornerR: CGFloat = 10
-            let left = bounds.minX + pad
-            let right = bounds.maxX - pad
-            let topY = bounds.maxY                              // the screen top
+            let inset = EdgeStripWindow.notchTracePad + 7
+            let left = bounds.minX + inset
+            let right = bounds.maxX - inset
             let bottomY = bounds.minY + EdgeStripWindow.notchCatchExtra  // notch's bottom edge
 
             let path = NSBezierPath()
-            path.move(to: NSPoint(x: left, y: topY))
-            path.line(to: NSPoint(x: left, y: bottomY + cornerR))
-            path.appendArc(
-                withCenter: NSPoint(x: left + cornerR, y: bottomY + cornerR),
-                radius: cornerR, startAngle: 180, endAngle: 270
-            )
-            path.line(to: NSPoint(x: right - cornerR, y: bottomY))
-            path.appendArc(
-                withCenter: NSPoint(x: right - cornerR, y: bottomY + cornerR),
-                radius: cornerR, startAngle: 270, endAngle: 360
-            )
-            path.line(to: NSPoint(x: right, y: topY))
+            path.move(to: NSPoint(x: left, y: bottomY))
+            path.line(to: NSPoint(x: right, y: bottomY))
             path.lineWidth = theme.tabUsesGlow ? 3 : 1.5
             path.lineCapStyle = .round
             withOptionalGlow(theme.tabUsesGlow ? accent : nil) {

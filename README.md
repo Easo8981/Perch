@@ -9,6 +9,8 @@ source app doesn't have to still be running when you drop.
 
 ## Run
 
+For quick iteration:
+
 ```sh
 swift build
 swift run
@@ -16,6 +18,34 @@ swift run
 
 Perch runs as an **accessory** app — no Dock icon, no menu bar item
 (`NSApp.setActivationPolicy(.accessory)`). Requires macOS 14+.
+
+## Install as an app (always-on)
+
+To use Perch day-to-day, build a real `.app` bundle and have it launch at login:
+
+```sh
+swift Scripts/make-icon.swift   # one-time: generates Resources/AppIcon.icns
+./Scripts/build-app.sh          # builds + ad-hoc-signs Perch.app
+mv Perch.app /Applications      # a stable location keeps the login item valid
+open /Applications/Perch.app
+```
+
+Then right-click the shelf and turn on **Launch at Login** (it appears only when running
+as a bundled app, and uses `SMAppService`). Since the shelf has no Dock or menu-bar
+presence, **Quit Perch** also lives in that right-click menu.
+
+### Updating after a code change
+
+The installed app does **not** auto-update — it's a snapshot. After editing the source,
+rebuild and reinstall in one step:
+
+```sh
+./Scripts/install.sh   # rebuilds Perch.app, quits the running copy, reinstalls, relaunches
+```
+
+It replaces `/Applications/Perch.app` in place, so the Dock launcher keeps working. (If
+Launch at Login ever stops firing after an update, toggle it off then on once — the
+ad-hoc signature changes each build.)
 
 ## Use it
 
@@ -42,9 +72,3 @@ items/<uuid>/
 ```
 
 It's plain JSON + files on disk — inspectable and easy to delete.
-
-## Docs
-
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the conceptual model (temporal decoupling of
-source and destination), the three pipelines (receive / store / re-vend), the component
-map, and the on-disk data model.

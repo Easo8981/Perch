@@ -220,7 +220,7 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
     private func contentHeight(for itemCount: Int) -> CGFloat {
         guard itemCount > 0 else { return Self.emptyStateHeight }
         let theme = themeStore.theme
-        let rows = CGFloat(itemCount) * RowMetrics.height
+        let rows = CGFloat(itemCount) * theme.rowHeight
             + CGFloat(itemCount - 1) * theme.rowSpacing
         return theme.contentPadding * 2 + rows
     }

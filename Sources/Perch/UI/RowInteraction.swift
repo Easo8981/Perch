@@ -11,13 +11,10 @@ final class RowInteractionState: ObservableObject {
     @Published var hoveredItemID: UUID?
 }
 
-/// Layout constants shared between the SwiftUI row rendering (`ItemRowView`) and the
-/// AppKit hit-testing (`ShelfHostView`) so the drag target and the delete button line
-/// up with what's drawn. Pitch-related spacing/padding live on `ShelfTheme`.
+/// Delete-button layout constants shared between the SwiftUI rendering (`ItemRowView`)
+/// and the AppKit hit-testing (`ShelfHostView`) so the drawn button and its clickable
+/// rect line up. Row height/spacing/padding live on `ShelfTheme`.
 enum RowMetrics {
-    /// Each row is pinned to exactly this height (via `.frame(height:)`), so the
-    /// window-sizing math in ShelfController is exact and rows never clip.
-    static let height: CGFloat = 50
     /// Delete button diameter.
     static let deleteDiameter: CGFloat = 20
     /// Trailing inset of the delete button from the row's right edge.

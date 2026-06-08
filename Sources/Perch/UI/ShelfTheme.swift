@@ -28,14 +28,26 @@ struct ShelfTheme {
     let cardStrokeColor: Color
     let cardStrokeWidth: CGFloat
 
-    // Rows (note: the *pitch* stays 48pt regardless of style — ShelfHostView.item(at:)
-    // depends on it for drag hit-testing — so only the visuals vary here).
+    // Rows. `rowHeight`, `rowSpacing`, and `contentPadding` drive both the SwiftUI
+    // layout and the AppKit drag/hover/delete hit-testing (ShelfHostView), so they must
+    // stay the single source of truth for row geometry.
+    let rowHeight: CGFloat
     let rowCornerRadius: CGFloat
     let rowFill: Color
     let rowHoverFill: Color
     let contentPadding: CGFloat
     let rowSpacing: CGFloat
     let showsDeleteButton: Bool
+
+    // Row anatomy
+    let iconSize: CGFloat
+    let iconCornerRadius: CGFloat
+    let iconShadow: Bool
+    let titleSize: CGFloat
+    let titleWeight: Font.Weight
+    let showsSubtitle: Bool
+    let usesRowSeparators: Bool
+    let separatorColor: Color
 
     // Edge tab (AppKit)
     let tabAccent: NSColor
@@ -52,12 +64,21 @@ struct ShelfTheme {
                 cardMaterial: .ultraThinMaterial,
                 cardStrokeColor: .white.opacity(0.12),
                 cardStrokeWidth: 0.5,
+                rowHeight: 50,
                 rowCornerRadius: 9,
                 rowFill: Color.primary.opacity(0.05),
                 rowHoverFill: Color.primary.opacity(0.11),
                 contentPadding: 6,
                 rowSpacing: 4,
                 showsDeleteButton: true,
+                iconSize: 34,
+                iconCornerRadius: 7,
+                iconShadow: true,
+                titleSize: 13,
+                titleWeight: .medium,
+                showsSubtitle: true,
+                usesRowSeparators: false,
+                separatorColor: .clear,
                 tabAccent: .controlAccentColor,
                 tabUsesGlow: true,
                 tabVisibleWidth: 9,
@@ -66,20 +87,29 @@ struct ShelfTheme {
         case .minimal:
             return ShelfTheme(
                 style: .minimal,
-                cardCornerRadius: 12,
+                cardCornerRadius: 10,
                 cardMaterial: .thinMaterial,
-                cardStrokeColor: .white.opacity(0.04),
+                cardStrokeColor: .white.opacity(0.05),
                 cardStrokeWidth: 0.5,
-                rowCornerRadius: 6,
+                rowHeight: 34,
+                rowCornerRadius: 5,
                 rowFill: .clear,
-                rowHoverFill: Color.primary.opacity(0.06),
-                contentPadding: 6,
-                rowSpacing: 2,
+                rowHoverFill: Color.primary.opacity(0.07),
+                contentPadding: 5,
+                rowSpacing: 0,
                 showsDeleteButton: false,
-                tabAccent: NSColor.secondaryLabelColor,
+                iconSize: 20,
+                iconCornerRadius: 4,
+                iconShadow: false,
+                titleSize: 12,
+                titleWeight: .regular,
+                showsSubtitle: false,
+                usesRowSeparators: true,
+                separatorColor: .primary.opacity(0.08),
+                tabAccent: NSColor.tertiaryLabelColor,
                 tabUsesGlow: false,
-                tabVisibleWidth: 5,
-                tabCornerRadius: 2.5
+                tabVisibleWidth: 4,
+                tabCornerRadius: 2
             )
         }
     }

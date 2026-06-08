@@ -59,7 +59,8 @@ struct ShelfContentView: View {
                     item: item,
                     theme: theme,
                     isHovered: interaction.hoveredItemID == item.id,
-                    thumbnail: thumbnails.thumbnail(for: item)
+                    thumbnail: thumbnails.thumbnail(for: item),
+                    showsSeparator: theme.usesRowSeparators && item.id != store.items.last?.id
                 )
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

@@ -1,10 +1,12 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// SwiftUI view for a single stored item (icon + title + kind). Pinned to exactly
-/// `RowMetrics.height` so the window can size to its contents precisely. Hover state is
-/// supplied by AppKit (`ShelfHostView`), since the host view intercepts mouse events;
-/// the delete "✕" is drawn here but its click is handled in AppKit too.
+/// SwiftUI view for a single stored item. Its anatomy (icon size, title, subtitle,
+/// separators, height) is driven by the active `ShelfTheme`, so Glass and Minimal read
+/// as genuinely different looks. Pinned to exactly `theme.rowHeight` so the window can
+/// size to its contents precisely. Hover state is supplied by AppKit (`ShelfHostView`),
+/// since the host view intercepts mouse events; the delete "✕" is drawn here but its
+/// click is handled in AppKit too.
 struct ItemRowView: View {
     let item: StoredItem
     let theme: ShelfTheme
@@ -12,6 +14,8 @@ struct ItemRowView: View {
     /// A real Quick Look content preview, if one has been generated; otherwise nil and
     /// we fall back to the file-type icon.
     let thumbnail: NSImage?
+    /// Whether to draw a hairline separator beneath this row (Minimal; not the last row).
+    let showsSeparator: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -19,16 +23,18 @@ struct ItemRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.metadata.title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: theme.titleSize, weight: theme.titleWeight))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .truncationMode(.middle)
 
-                Text(subtitle)
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .tracking(0.4)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
+                if theme.showsSubtitle {
+                    Text(subtitle)
+                        .font(.system(size: 9.5, weight: .semibold))
+                        .tracking(0.4)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
 
             Spacer(minLength: 0)
@@ -36,14 +42,15 @@ struct ItemRowView: View {
         .padding(.horizontal, 10)
         .frame(
             maxWidth: .infinity,
-            minHeight: RowMetrics.height,
-            maxHeight: RowMetrics.height,
+            minHeight: theme.rowHeight,
+            maxHeight: theme.rowHeight,
             alignment: .leading
         )
         .background(
             RoundedRectangle(cornerRadius: theme.rowCornerRadius, style: .continuous)
                 .fill(isHovered ? theme.rowHoverFill : theme.rowFill)
         )
+        .overlay(alignment: .bottom) { separator }
         .overlay(alignment: .trailing) { deleteButton }
         .contentShape(Rectangle())
         .animation(.easeOut(duration: 0.13), value: isHovered)
@@ -51,7 +58,7 @@ struct ItemRowView: View {
     }
 
     /// A real preview is shown as a small rounded "photo" tile; a generic file icon is
-    /// shown at its natural shape.
+    /// shown at its natural shape. Size/flatness follow the theme.
     @ViewBuilder
     private var icon: some View {
         if let thumbnail {
@@ -59,21 +66,32 @@ struct ItemRowView: View {
                 .resizable()
                 .interpolation(.high)
                 .aspectRatio(contentMode: .fill)
-                .frame(width: 34, height: 34)
-                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .frame(width: theme.iconSize, height: theme.iconSize)
+                .clipShape(RoundedRectangle(cornerRadius: theme.iconCornerRadius, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    RoundedRectangle(cornerRadius: theme.iconCornerRadius, style: .continuous)
                         .stroke(.white.opacity(0.14), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.2), radius: 1.5, y: 0.5)
+                .shadow(color: .black.opacity(theme.iconShadow ? 0.2 : 0), radius: 1.5, y: 0.5)
                 .transition(.opacity)
         } else {
             Image(nsImage: item.iconImage())
                 .resizable()
                 .interpolation(.high)
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 34, height: 34)
-                .shadow(color: .black.opacity(0.14), radius: 1.5, y: 0.5)
+                .frame(width: theme.iconSize, height: theme.iconSize)
+                .shadow(color: .black.opacity(theme.iconShadow ? 0.14 : 0), radius: 1.5, y: 0.5)
+        }
+    }
+
+    @ViewBuilder
+    private var separator: some View {
+        if showsSeparator {
+            Rectangle()
+                .fill(theme.separatorColor)
+                .frame(height: 0.5)
+                .padding(.leading, theme.iconSize + 20)
+                .padding(.trailing, 10)
         }
     }
 

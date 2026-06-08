@@ -13,6 +13,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
     private let themeStore: ThemeStore
     private let interaction = RowInteractionState()
     private let thumbnails = ThumbnailStore()
+    private let loginItem = LoginItemController()
     private let hostingView: NSHostingView<ShelfContentView>
     /// Retains the active drag source for the lifetime of an in-flight drag.
     private var activeDragSource: ItemDragSource?
@@ -156,7 +157,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
     /// padding. Accounts for scroll offset in the rare overflow (scrolling) case.
     private func rowIndex(at point: NSPoint) -> Int? {
         let theme = themeStore.theme
-        let rowHeight = RowMetrics.height + theme.rowSpacing
+        let rowHeight = theme.rowHeight + theme.rowSpacing
         let topInset = theme.contentPadding
         let contentY = point.y + contentScrollOffsetY()
         let index = Int((contentY - topInset) / rowHeight)
@@ -169,8 +170,8 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
     /// easier target. Shifted by the scroll offset so it tracks the visible row.
     private func deleteHitRect(forRow index: Int) -> NSRect {
         let theme = themeStore.theme
-        let rowTop = theme.contentPadding + CGFloat(index) * (RowMetrics.height + theme.rowSpacing)
-        let centerY = rowTop + RowMetrics.height / 2 - contentScrollOffsetY()
+        let rowTop = theme.contentPadding + CGFloat(index) * (theme.rowHeight + theme.rowSpacing)
+        let centerY = rowTop + theme.rowHeight / 2 - contentScrollOffsetY()
         let centerX = bounds.width - theme.contentPadding
             - RowMetrics.deleteTrailingInset - RowMetrics.deleteDiameter / 2
         let hit = RowMetrics.deleteDiameter + 10
@@ -242,7 +243,31 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
         menu.addItem(.separator())
         menu.addItem(appearanceMenuItem())
 
+        if loginItem.isAvailable {
+            let launchAtLogin = NSMenuItem(
+                title: "Launch at Login",
+                action: #selector(toggleLaunchAtLoginAction(_:)),
+                keyEquivalent: ""
+            )
+            launchAtLogin.target = self
+            launchAtLogin.state = loginItem.isEnabled ? .on : .off
+            menu.addItem(launchAtLogin)
+        }
+
+        menu.addItem(.separator())
+        let quit = NSMenuItem(title: "Quit Perch", action: #selector(quitAction(_:)), keyEquivalent: "")
+        quit.target = self
+        menu.addItem(quit)
+
         return menu
+    }
+
+    @objc private func toggleLaunchAtLoginAction(_ sender: NSMenuItem) {
+        loginItem.toggle()
+    }
+
+    @objc private func quitAction(_ sender: NSMenuItem) {
+        NSApp.terminate(nil)
     }
 
     /// "Appearance ▸ Glass / Minimal" — toggles the active look live.
