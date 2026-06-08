@@ -12,6 +12,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
     private let store: ItemStore
     private let themeStore: ThemeStore
     private let interaction = RowInteractionState()
+    private let thumbnails = ThumbnailStore()
     private let hostingView: NSHostingView<ShelfContentView>
     /// Retains the active drag source for the lifetime of an in-flight drag.
     private var activeDragSource: ItemDragSource?
@@ -31,7 +32,12 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
         self.store = store
         self.themeStore = themeStore
         hostingView = NSHostingView(
-            rootView: ShelfContentView(store: store, themeStore: themeStore, interaction: interaction)
+            rootView: ShelfContentView(
+                store: store,
+                themeStore: themeStore,
+                interaction: interaction,
+                thumbnails: thumbnails
+            )
         )
         super.init(frame: .zero)
 
@@ -50,6 +56,7 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
             store: store,
             themeStore: themeStore,
             interaction: interaction,
+            thumbnails: thumbnails,
             onContentHeight: { [weak self] height in self?.onContentHeight?(height) }
         )
     }

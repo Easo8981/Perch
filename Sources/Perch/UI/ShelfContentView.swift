@@ -17,6 +17,7 @@ struct ShelfContentView: View {
     @ObservedObject var store: ItemStore
     @ObservedObject var themeStore: ThemeStore
     @ObservedObject var interaction: RowInteractionState
+    @ObservedObject var thumbnails: ThumbnailStore
     var onContentHeight: (CGFloat) -> Void = { _ in }
 
     private var theme: ShelfTheme { themeStore.theme }
@@ -52,7 +53,8 @@ struct ShelfContentView: View {
                     ItemRowView(
                         item: item,
                         theme: theme,
-                        isHovered: interaction.hoveredItemID == item.id
+                        isHovered: interaction.hoveredItemID == item.id,
+                        thumbnail: thumbnails.thumbnail(for: item)
                     )
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }

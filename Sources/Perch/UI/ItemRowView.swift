@@ -9,15 +9,13 @@ struct ItemRowView: View {
     let item: StoredItem
     let theme: ShelfTheme
     let isHovered: Bool
+    /// A real Quick Look content preview, if one has been generated; otherwise nil and
+    /// we fall back to the file-type icon.
+    let thumbnail: NSImage?
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(nsImage: item.iconImage())
-                .resizable()
-                .interpolation(.high)
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 34, height: 34)
-                .shadow(color: .black.opacity(0.14), radius: 1.5, y: 0.5)
+            icon
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.metadata.title)
@@ -49,6 +47,34 @@ struct ItemRowView: View {
         .overlay(alignment: .trailing) { deleteButton }
         .contentShape(Rectangle())
         .animation(.easeOut(duration: 0.13), value: isHovered)
+        .animation(.easeOut(duration: 0.2), value: thumbnail != nil)
+    }
+
+    /// A real preview is shown as a small rounded "photo" tile; a generic file icon is
+    /// shown at its natural shape.
+    @ViewBuilder
+    private var icon: some View {
+        if let thumbnail {
+            Image(nsImage: thumbnail)
+                .resizable()
+                .interpolation(.high)
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 34, height: 34)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .stroke(.white.opacity(0.14), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.2), radius: 1.5, y: 0.5)
+                .transition(.opacity)
+        } else {
+            Image(nsImage: item.iconImage())
+                .resizable()
+                .interpolation(.high)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 34, height: 34)
+                .shadow(color: .black.opacity(0.14), radius: 1.5, y: 0.5)
+        }
     }
 
     @ViewBuilder
