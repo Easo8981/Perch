@@ -23,6 +23,8 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
     private var wasEmpty: Bool?
     /// Latest measured SwiftUI content height, used to size the window to fit.
     private var measuredContentHeight: CGFloat?
+    /// Observes display add/remove/resolution changes so the edge tabs stay correct.
+    private var screenObserver: NSObjectProtocol?
     private var preferredScreen: NSScreen?
     private var preferredEdge: ShelfEdge = .right
     private var itemsCancellable: AnyCancellable?
@@ -72,6 +74,16 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
         // always use the freshly computed frame rather than a stale persisted one.
         windowController.hide(animated: false)
         installEdgeStripIfNeeded()
+
+        // Rebuild the edge tabs when displays are added/removed or change resolution,
+        // so they never sit at stale positions or on a screen that no longer exists.
+        screenObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.rebuildEdgeStrips() }
+        }
 
         // During a drag, show only the tab nearest the cursor; hide all when it ends.
         mouseMonitor.onDragSessionChange = { [weak self] active in
@@ -275,6 +287,24 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
         NSLog("Perch installed \(strips.count) edge tab(s) across \(NSScreen.screens.count) screen(s)")
     }
 
+    /// Tear down and recreate the edge tabs for the current screen layout. If the shelf
+    /// is open on a display that's gone, retract it so it can't be stranded off-screen.
+    private func rebuildEdgeStrips() {
+        for strip in edgeStrips {
+            strip.orderOut(nil)
+        }
+        edgeStrips.removeAll()
+        installEdgeStripIfNeeded()
+
+        if let screen = preferredScreen, !NSScreen.screens.contains(screen) {
+            preferredScreen = nil
+            if panel.isVisible {
+                hideShelf(animated: false)
+            }
+        }
+        NSLog("Perch rebuilt edge tabs after screen change (\(NSScreen.screens.count) screen(s))")
+    }
+
     private func makeStrip(on screen: NSScreen, edge: ShelfEdge) -> EdgeStripWindow {
         let strip = EdgeStripWindow(screen: screen, edge: edge, themeStore: themeStore)
         strip.stripDelegate = self
@@ -378,6 +408,7 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
             guard let self, !Task.isCancelled else { return }
             // Re-check: content may have arrived, or the pointer re-entered.
             guard self.store.items.isEmpty, !self.pointerInRegion else { return }
+            self.hostView.resetInteraction()
             self.windowController.hide(animated: true)
             self.retractTask = nil
         }
@@ -385,6 +416,7 @@ final class ShelfController: ShelfDropHandling, EdgeStripDelegate {
 
     private func hideShelf(animated: Bool) {
         cancelRetract()
+        hostView.resetInteraction()
         windowController.hide(animated: animated)
     }
 

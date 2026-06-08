@@ -153,27 +153,50 @@ final class ShelfHostView: NSView, QLPreviewPanelDataSource, QLPreviewPanelDeleg
 
     /// The index of the row under `point`, or nil. Mirrors ShelfContentView's layout:
     /// each row is `RowMetrics.height` tall, laid out with theme-driven spacing + outer
-    /// padding.
+    /// padding. Accounts for scroll offset in the rare overflow (scrolling) case.
     private func rowIndex(at point: NSPoint) -> Int? {
         let theme = themeStore.theme
         let rowHeight = RowMetrics.height + theme.rowSpacing
         let topInset = theme.contentPadding
-        let index = Int((point.y - topInset) / rowHeight)
+        let contentY = point.y + contentScrollOffsetY()
+        let index = Int((contentY - topInset) / rowHeight)
         guard index >= 0, index < store.items.count else { return nil }
         return index
     }
 
     /// The clickable rect of a row's delete button, matching where ItemRowView draws it
-    /// (trailing-aligned, vertically centered in the 44pt row), enlarged slightly for an
-    /// easier target.
+    /// (trailing-aligned, vertically centered in the row), enlarged slightly for an
+    /// easier target. Shifted by the scroll offset so it tracks the visible row.
     private func deleteHitRect(forRow index: Int) -> NSRect {
         let theme = themeStore.theme
         let rowTop = theme.contentPadding + CGFloat(index) * (RowMetrics.height + theme.rowSpacing)
-        let centerY = rowTop + RowMetrics.height / 2
+        let centerY = rowTop + RowMetrics.height / 2 - contentScrollOffsetY()
         let centerX = bounds.width - theme.contentPadding
             - RowMetrics.deleteTrailingInset - RowMetrics.deleteDiameter / 2
         let hit = RowMetrics.deleteDiameter + 10
         return NSRect(x: centerX - hit / 2, y: centerY - hit / 2, width: hit, height: hit)
+    }
+
+    /// SwiftUI's `ScrollView` is backed by an `NSScrollView`; when the list overflows the
+    /// screen and scrolls, read its content offset so the row math above stays correct.
+    /// Returns 0 in the normal (non-overflowing) case.
+    private func contentScrollOffsetY() -> CGFloat {
+        var queue = hostingView.subviews
+        while !queue.isEmpty {
+            let view = queue.removeFirst()
+            if let scrollView = view as? NSScrollView {
+                return scrollView.contentView.bounds.origin.y
+            }
+            queue.append(contentsOf: view.subviews)
+        }
+        return 0
+    }
+
+    /// Clear any hover highlight / armed delete (called when the shelf hides so stale
+    /// state doesn't carry into the next reveal).
+    func resetInteraction() {
+        interaction.hoveredItemID = nil
+        pendingDeleteItem = nil
     }
 
     // MARK: - Context menu (AppKit; reliable while the panel is non-key)
